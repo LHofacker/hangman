@@ -1,0 +1,3 @@
+Get word (user ineserted, from file, from db, etc.)
+Validate word
+Hide word > _ _ _ _ _ _ _ _ _

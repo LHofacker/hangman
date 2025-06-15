@@ -26,9 +26,10 @@ void hide_input_word(char *ptr_to_word, char *ptr_to_secret){
     ptr_to_secret[len] = '\0';
 }
 
-void make_guess(char *ptr_to_word, char *ptr_to_secret){
+void make_guess(char *ptr_to_word, char *ptr_to_secret, int *lives){
 
     char *guess = malloc(sizeof(char)+1);
+    int hits = 0;
     
     printf("Insira sua tentativa: ");
     scanf(" %c", guess);
@@ -38,24 +39,34 @@ void make_guess(char *ptr_to_word, char *ptr_to_secret){
         if (*guess == ptr_to_word[i]){
 
             ptr_to_secret[i] = *guess;
+            hits++;
         }
+    }
+
+    if (hits <= 0){
+
+        *lives = *lives - 1;
     }
 }
 
 int main(int argc, char *argv[]){
 
     char *secret_word, *secret_word_hidden;
+    int *lives = malloc(sizeof(int));
+    *lives = 7;
 
     input_word(&secret_word, &secret_word_hidden);
     hide_input_word(secret_word, secret_word_hidden);
-    make_guess(secret_word, secret_word_hidden);
+    make_guess(secret_word, secret_word_hidden, lives);
 
     printf("%ld AND %ld\n", strlen(secret_word), strlen(secret_word_hidden));
     printf("%s AND %s\n", secret_word, secret_word_hidden);
+    printf("LIVES: %d\n", *lives);
 
 
     free(secret_word);
     free(secret_word_hidden);
+    free(lives);
 
     return 0;
 }

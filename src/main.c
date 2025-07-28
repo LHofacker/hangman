@@ -1,19 +1,21 @@
 #include<stdio.h>
+#include<time.h>
 #include<string.h>
 #include<stdlib.h>
 
-void get_word_from_file(char *buffer, int buffer_size){
+void get_random_word_from_file(char *buffer, int buffer_size){
 
     FILE *file = fopen("/home/hofacker/Documents/Projetos/C/hangman/assets/hangmanWords.txt", "r");
 
     if (!file){
 
-        printf("UNABLE TO OPEN FILE! MAY NOT EXIST.\n");
+        printf("UNABLE TO OPEN FILE! MAY NOT EXIST!\n");
     }else{
 
+        srand((unsigned int)time(NULL));
         int random_line_number = rand() % 10;
-        int i = 0;
         
+        int i = 0;
         while(i < random_line_number){
 
             fgets(buffer, buffer_size, file);
@@ -21,20 +23,34 @@ void get_word_from_file(char *buffer, int buffer_size){
         }
 
         buffer[strcspn(buffer, "\n")] = '\0';
-
         fclose(file);
     }
 
 }
 
+void hide_selected_word(char *word, char **hidden_word_str){
+
+    size_t word_size = strlen(word);
+    *hidden_word_str = malloc(word_size + 1);
+    (*hidden_word_str)[word_size] = '\0';
+    
+    for (size_t i = 0; i != word_size; i++) {
+        
+        (*hidden_word_str)[i] = '_';
+    }
+}
+
 int main(){
 
-    size_t buffer_size = 50;
-    char *buffer = malloc(buffer_size);
+    const size_t MAX_WORD_SIZE = 50;
+    char *word = malloc(MAX_WORD_SIZE);
+    char *hidden_word = 0;
 
-    get_word_from_file(buffer, buffer_size);
+    get_random_word_from_file(word, MAX_WORD_SIZE);
+    hide_selected_word(word, &hidden_word);
 
-    printf("%s\n", buffer);
+    free(word);
+    free(hidden_word);
 
     return 0;
 }

@@ -74,7 +74,7 @@ int char_already_used(char guess, char *used_characters){
 
     size_t length_of_used_chars = strlen(used_characters);
 
-    for(size_t i = 0; i <= length_of_used_chars; i++){
+    for(size_t i = 0; i < length_of_used_chars; i++){
 
         if(guess == used_characters[i]){
 
@@ -147,10 +147,10 @@ int game_state(char* word, char* hidden_word, int *lives){
 
 void print_UI(char *hidden_word, char *used_characters, int *lives){
 
-    printf("\n\n\n\n\n\n\n\n\n\n\n\n");
     printf("%s\n", hidden_word);
     printf("USED CHARS: %s\n", used_characters);
     printf("LIVES: %d\n", *lives);
+    printf("\n\n\n\n\n\n\n\n\n\n\n\n");
 
 }
 
@@ -173,9 +173,9 @@ int main(){
 
     while(loop_keeper == -1){
 
+        print_UI(hidden_word,used_characters, lives);
         make_guess(used_characters, word, hidden_word, lives);
         game_end_flag = game_state(word, hidden_word, lives);
-        print_UI(hidden_word,used_characters, lives);
 
         if (game_end_flag == 1){
 

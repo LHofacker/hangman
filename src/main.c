@@ -2,6 +2,7 @@
 #include<time.h>
 #include<string.h>
 #include<stdlib.h>
+#include<ctype.h>
 
 #define MAX_WORD_SIZE 50
 #define MAX_GUESS_SIZE 2
@@ -17,8 +18,9 @@ void get_random_word_from_file(char *buffer, int buffer_size){
 
         srand((unsigned int)time(NULL));
         int random_line_number = rand() % 11;
-        
-        int i = 0;
+
+        int i = 0;    
+
         while(i < random_line_number){
 
             fgets(buffer, buffer_size, file);
@@ -31,7 +33,19 @@ void get_random_word_from_file(char *buffer, int buffer_size){
 
 }
 
+void word_to_lowercase(char *buffer){
+
+    size_t buffer_size = strlen(buffer);
+
+    for(size_t i = 0; i < buffer_size; i++){
+
+        buffer[i] = tolower((unsigned char)buffer[i]);
+    }
+}
+
 void hide_selected_word(char *word, char **hidden_word_str, size_t *actual_word_size){
+
+    word_to_lowercase(word);
 
     *actual_word_size = strlen(word);
     *hidden_word_str = malloc(*actual_word_size + 1);
@@ -43,81 +57,144 @@ void hide_selected_word(char *word, char **hidden_word_str, size_t *actual_word_
     }
 }
 
-//Cleans up garbage left in stdin;
-void cleanup_stdin(char *guess){
+void cleanup_stdin(char guess){
 
     char a;
 
-    if(guess[1] != '\n'){
-
+    if(guess != '\n'){
         a = getchar();
-        while (a != '\n')
+
+        while (a != '\n'){
             a = getchar();
+        }
     }
 }
 
-int validade_user_input(char *guess){
+int char_already_used(char guess, char *used_characters){
 
-    char *alfabet = "abcdefghijklmnopqrstuvwxyz";
-    int alfabet_size = 27;
+    size_t length_of_used_chars = strlen(used_characters);
 
-    if(*guess != ' ' && *guess != '\n'){
+    for(size_t i = 0; i <= length_of_used_chars; i++){
 
-        for(int i = 0; i < alfabet_size; i++){
+        if(guess == used_characters[i]){
 
-            if(*guess == alfabet[i]){
-
-                return 0;
-            }
+            return 0;
         }
     }
 
-    printf("ENTRY IS NOT A LETTER. TRY AGAIN!\n\n");
+    used_characters[length_of_used_chars] = guess;
+
     return 1;
 }
 
-void make_guess(char *used_characters, char *hidden_word, char *word, size_t *actual_word_size){
+int validade_user_input(char guess, char *used_characters){
 
-    char *guess = malloc(2);
-    int validated = 1;
+    if(!isalpha((unsigned char) guess)){
 
-    while(validated == 1){
-
-        printf("Input Your Guess: ");
-        fgets(guess, 2, stdin);
-        validated = validade_user_input(guess);
-        cleanup_stdin(guess);
+        printf("GUESS IS NOT A LETTER. TRY AGAIN!\n");
+        return 1;
     }
 
-    for (size_t i = 0; i <= *actual_word_size - 1; i++){
-        
-        if(*guess == word[i]){
+    if(!char_already_used(guess, used_characters)){
 
-            hidden_word[i] = *guess;
+        printf("CHAR ALREADY USED. TRY AGAIN!\n");
+        return 1;
+    }
+
+    return 0;
+}
+
+void make_guess(char *used_characters, char* word, char* hidden_word, int *lives){
+
+    char guess;
+    int validated = 1;
+    int hits = 0;
+
+    printf("MAKE YOUR GUESS: ");
+    guess = getchar();
+    guess = tolower(guess);
+
+    cleanup_stdin(guess);
+
+    validated = validade_user_input(guess, used_characters);
+
+    if(validated == 0){
+
+        size_t word_length = strlen(word);
+
+        for(size_t i = 0; i < word_length; i++){
+
+            if (guess == word[i]){
+
+                hidden_word[i] = guess;
+                hits += 1;                
+            }
         }
 
+        printf("HITS: %d\n", hits);
+        if(hits < 1) *lives -= 1;
     }
+}
 
-    free(guess);
+
+int game_state(char* word, char* hidden_word, int *lives){
+
+    if (strcmp(word, hidden_word) == 0) return 1;
+    if (*lives == 0) return 2;
+
+    return 0;
+}
+
+void print_UI(char *hidden_word, char *used_characters, int *lives){
+
+    printf("\n\n\n\n\n\n\n\n\n\n\n\n");
+    printf("%s\n", hidden_word);
+    printf("USED CHARS: %s\n", used_characters);
+    printf("LIVES: %d\n", *lives);
+
 }
 
 int main(){
 
     char *word = malloc(MAX_WORD_SIZE);
-    char *hidden_word = 0;
+    char *used_characters = malloc(30);
     size_t *actual_word_size = malloc(sizeof(int));
-    actual_word_size;
-    char used_characters[27];
-    int lives = 7;
+    int *lives = malloc(sizeof(int));
+    char *hidden_word = 0;
 
+    int loop_keeper = -1;
+    int game_end_flag = 0;
+
+    *lives = 7;
+    used_characters[29] = '\0';   
 
     get_random_word_from_file(word, MAX_WORD_SIZE);
     hide_selected_word(word, &hidden_word, actual_word_size);
-    make_guess(used_characters, hidden_word, word, actual_word_size);
-    printf("%s\n", hidden_word);
-    printf("%s\n", word);
+
+    while(loop_keeper == -1){
+
+        make_guess(used_characters, word, hidden_word, lives);
+        game_end_flag = game_state(word, hidden_word, lives);
+        print_UI(hidden_word,used_characters, lives);
+
+        if (game_end_flag == 1){
+
+            printf("CONGRATULATIONS! YOU WON!\n");
+            break;
+        }
+
+         if (game_end_flag == 2){
+            
+            printf("YOU HAVE LOST!\n");
+            break;
+        }
+    }
+
+    printf("THE WORD WAS: %s\n", word);
 
     free(word);
+    free(used_characters);
+    free(lives);
     free(hidden_word);
     free(actual_word_size);
 

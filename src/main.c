@@ -3,17 +3,19 @@
 #include<string.h>
 #include<stdlib.h>
 #include<ctype.h>
+#include<sysexits.h>
 
 #define MAX_WORD_SIZE 50
 #define MAX_GUESS_SIZE 2
 
 void get_random_word_from_file(char *buffer, int buffer_size){
 
-    FILE *file = fopen("/home/hofacker/Documents/Projetos/C/hangman/assets/hangmanWords.txt", "r");
+    FILE *file = fopen("../assets/hangmanWords.txt", "r");
 
     if (!file){
 
         printf("UNABLE TO OPEN FILE! MAY NOT EXIST!\n");
+        exit(EX_IOERR);
     }else{
 
         srand((unsigned int)time(NULL));
@@ -110,6 +112,7 @@ void make_guess(char *used_characters, char* word, char* hidden_word, int *lives
     int validated = 1;
     int hits = 0;
 
+    
     printf("MAKE YOUR GUESS: ");
     guess = getchar();
     guess = tolower(guess);
@@ -147,6 +150,8 @@ int game_state(char* word, char* hidden_word, int *lives){
 
 void print_UI(char *hidden_word, char *used_characters, int *lives){
 
+    system("clear");
+
     printf("%s\n", hidden_word);
     printf("USED CHARS: %s\n", used_characters);
     printf("LIVES: %d\n", *lives);
@@ -179,13 +184,17 @@ int main(){
 
         if (game_end_flag == 1){
 
+            system("clear");
             printf("CONGRATULATIONS! YOU WON!\n");
+            printf("\n\n");
             break;
         }
 
          if (game_end_flag == 2){
             
+            system("clear");
             printf("YOU HAVE LOST!\n");
+            printf("\n\n");
             break;
         }
     }
